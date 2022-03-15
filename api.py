@@ -6,11 +6,12 @@ import re
 from typing import Union, Dict, List, Type, Any
 from loguru import logger
 from api_requests import ApiRequest
+from config import Config
 
 
 app = Flask(__name__)
 JSON = Union[Dict[str, Any], List[Any], int, str, float, bool, Type[None]]
-logger.add(sink='logs/log.txt', level="DEBUG", encoding='UTF-8')
+logger.configure(handlers=[dict(sink=Config.path_to_proj+"/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}")])
 
 class User(BaseModel):
     """
