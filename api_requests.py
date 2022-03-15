@@ -1,5 +1,6 @@
 from typing import List
-import re, os
+import re
+import os
 import requests
 from requests.structures import CaseInsensitiveDict
 from config import Config
