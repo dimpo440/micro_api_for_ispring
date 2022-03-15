@@ -15,6 +15,7 @@ logger.configure(handlers=[dict(sink=Config.path_to_proj+"/info_{time:DD:MM:YYYY
 
 class User(BaseModel):
     """
+
     User model for validate data
     """
 
