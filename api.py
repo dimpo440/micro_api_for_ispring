@@ -11,7 +11,7 @@ from config import Config
 
 app = Flask(__name__)
 JSON = Union[Dict[str, Any], List[Any], int, str, float, bool, Type[None]]
-logger.configure(handlers=[dict(sink=Config.path_to_proj+"/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}")])
+logger.configure(handlers=[dict(sink=f"{Config.path_to_proj}/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}")])
 
 class User(BaseModel):
     """
