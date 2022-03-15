@@ -11,7 +11,7 @@ from config import Config
 
 app = Flask(__name__)
 JSON = Union[Dict[str, Any], List[Any], int, str, float, bool, Type[None]]
-logger.configure(handlers=[dict(sink=Config.path_to_proj+"/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}")])
+logger.configure(handlers=[dict(sink=Config.path_to_proj+"/logs/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}")])
 
 class User(BaseModel):
     """
@@ -130,7 +130,7 @@ def ispring_registration_from_form():
             response_code = 500  # разные ошибки выполнения запросов к ISPING, ошибки в работе API
             return jsonify(response), response_code
 
-    return render_template('register_form.html', course_id=request.args.get('course_id'))
+    return render_template('register_form.html', site_url=Config.site_url, course_id=request.args.get('course_id'))
 
 
 if __name__ == '__main__':

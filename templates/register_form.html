@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title> Форма регистрации</title>
+    <base href="{{ site_url }}"/>
 </head>
 <body>
 
 <div>
     <h1>Регистрация нового пользователя</h1>
-    <form action="http://127.0.0.1:5000/api/register_form" method="post">
+    <form action="api/register_form" method="post">
         <p>
             <input id="course_id" type="text" name="course_id" hidden value={{ course_id }}>
         </p>
