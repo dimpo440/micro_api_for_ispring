@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config["WTF_CSRF_ENABLED"] = False
 app.config['JSON_AS_ASCII'] = False
 JSON = Union[Dict[str, Any], List[Any], int, str, float, bool, Type[None]]
-logger.configure(handlers=[dict(sink=Config.path_to_proj+"/logs/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}")])
+logger.configure(handlers=[dict(sink=Config.path_to_proj+"/logs/info_{time:DD:MM:YYYY}.log", format="{time} {name} {message}", encoding='UTF-8')])
 
 
 class User(BaseModel):
