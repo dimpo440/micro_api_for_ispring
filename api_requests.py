@@ -113,7 +113,7 @@ class ApiRequest:
             logger.info(f"Add new user successful. User_id: {self.new_user.user_id}, user data: {self.new_user}")
             return True
         except Exception as ex:
-            logger.error(f"Error get user_id from response {ex}")
+            logger.error(f"Error get user_id from response {ex} XML content is {resp_xml_content}")
             return False
 
     def check_exist_course_user(self, course_id: str) -> bool:
