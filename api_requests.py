@@ -90,7 +90,7 @@ class ApiRequest:
 #        login = self.re_login.search(self.new_user.email).group('login')
 
         files = {
-            'departmentId': (None, f'{self.default_department_id}'),
+#            'departmentId': (None, f'{self.default_department_id}'),
             'fields[email]': (None, f'{self.new_user.email}'),
 #            'fields[login]': (None, f'{login}'),
             'fields[first_name]': (None, f'{self.new_user.name}'),
