@@ -91,11 +91,11 @@ class ApiRequest:
 
         files = {
 #            'departmentId': (None, f'{self.default_department_id}'),
-            'fields[email]': (None, f'{self.new_user.email}'),
+            'X-email': (None, f'{self.new_user.email}'),
 #            'fields[login]': (None, f'{login}'),
-            'fields[first_name]': (None, f'{self.new_user.name}'),
-            'fields[last_name]': (None, f'{self.new_user.surname}'),
-            'fields[phone]': (None, f'{self.new_user.phone}'),
+#            'fields[first_name]': (None, f'{self.new_user.name}'),
+#            'fields[last_name]': (None, f'{self.new_user.surname}'),
+#            'fields[phone]': (None, f'{self.new_user.phone}'),
 #            'sendLoginEmail': (None, f'{True}'),
         }
 
