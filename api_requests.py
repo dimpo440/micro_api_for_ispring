@@ -53,7 +53,7 @@ class ApiRequest:
         url = f"{self.base_url}/user"
         email = self.new_user.email
         resp = requests.get(url, headers=self.headers)
-        logger.debug(f"Isping Checking user exists response: status code={resp.status_code}, content={resp.content}")
+        logger.debug(f"Isping Checking user exists response: status code={resp.status_code}, content={resp.content[0:150]}")
 
         if resp.status_code != 200:  # other bad response
             raise Exception(f"Request check_exist_user failed {resp.status_code}")
@@ -87,16 +87,16 @@ class ApiRequest:
         logger.debug(f"Trying to create a new user, user_data = {self.new_user}")
 
         url = f"{self.base_url}/user"
-        login = self.re_login.search(self.new_user.email).group('login')
+#        login = self.re_login.search(self.new_user.email).group('login')
 
         files = {
             'departmentId': (None, f'{self.default_department_id}'),
             'fields[email]': (None, f'{self.new_user.email}'),
-            'fields[login]': (None, f'{login}'),
+#            'fields[login]': (None, f'{login}'),
             'fields[first_name]': (None, f'{self.new_user.name}'),
             'fields[last_name]': (None, f'{self.new_user.surname}'),
             'fields[phone]': (None, f'{self.new_user.phone}'),
-            'sendLoginEmail': (None, f'{True}'),
+#            'sendLoginEmail': (None, f'{True}'),
         }
 
         resp = requests.post(url=url, headers=self.headers, files=files)
