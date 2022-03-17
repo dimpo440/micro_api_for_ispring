@@ -1,6 +1,4 @@
 from typing import List
-import re
-import os
 import requests
 from requests.structures import CaseInsensitiveDict
 from config import Config
@@ -10,7 +8,7 @@ from loguru import logger
 
 class ApiRequest:
     """
-    Class for sending requests to the Isping API
+    Class for sending requests to the Ispring API
 
     """
     def __init__(self, new_user):
@@ -21,9 +19,6 @@ class ApiRequest:
         self.headers["X-Auth-Email"] = Config.X_Auth_Email
         self.headers["X-Auth-Password"] = Config.X_Auth_Password
         self.new_user = new_user
-        self.default_department_id = Config.default_department_id
-        self.dueDate = Config.dueDate
-        self.re_login = re.compile('(?P<login>\w+)\@', re.M | re.S)
 
     def api_requests(self) -> None:
         """
@@ -53,11 +48,10 @@ class ApiRequest:
         url = f"{self.base_url}/user"
         email = self.new_user.email
         resp = requests.get(url, headers=self.headers)
-        logger.debug(f"Isping Checking user exists response: status code={resp.status_code}, content={resp.content[0:150]}")
+        logger.debug(f"Ispring Checking user exists response: status code={resp.status_code}, content={resp.content[0:150]}")
 
         if resp.status_code != 200:  # other bad response
             raise Exception(f"Request check_exist_user failed {resp.status_code}")
-
 
         resp_xml_content = resp.content
         tree = etree.XML(resp_xml_content)
@@ -76,59 +70,65 @@ class ApiRequest:
         if is_phone_already_exists:
             raise Exception(f"User with phone '{self.new_user.phone}' already exists")
 
-
     def add_user(self) -> bool:
         """
         Method for adding a new user to Ispring.
-        raise BadUserIdException if Isping not returned user_id
+        raise BadUserIdException if Ispring not returned user_id
 
         :return: bool success
         """
         logger.debug(f"Trying to create a new user, user_data = {self.new_user}")
 
         url = f"{self.base_url}/user"
-#        login = self.re_login.search(self.new_user.email).group('login')
 
-#        files = {
-#            'departmentId': (None, f'{self.default_department_id}'),
-#            'X-email': (None, f'{self.new_user.email}'),
-#            'fields[login]': (None, f'{login}'),
-#            'fields[first_name]': (None, f'{self.new_user.name}'),
-#            'fields[last_name]': (None, f'{self.new_user.surname}'),
-#            'fields[phone]': (None, f'{self.new_user.phone}'),
-#            'sendLoginEmail': (None, f'{True}'),
-#        }
         self.headers["X-email"] = self.new_user.email
-        resp = requests.post(url=url, headers=self.headers)  # , files=files)
+        resp = requests.post(url=url, headers=self.headers)
 
-        logger.debug(f"Isping create user response: status code={resp.status_code}, content={resp.content}")
+        logger.debug(f"Ispring create user response: status code={resp.status_code}, content={resp.content}")
 
         if resp.status_code != 201:  # other bad response
             logger.error(f"Failed to create user")
             raise Exception(f"Request add_user failed {resp.status_code}")
 
+        if resp.status_code == 409:  # other bad response
+            logger.error(f"Failed to create user")
+            raise Exception(f"User with login {self.new_user.email} already exists")
+
         resp_xml_content = resp.content
         try:
-            self.new_user.user_id = etree.XML(resp_xml_content).text
+            # the last or the only one data in response content is user_id
+            self.new_user.user_id = resp_xml_content.split()[-1]
             logger.info(f"Add new user successful. User_id: {self.new_user.user_id}, user data: {self.new_user}")
+            self.update_user_info()
             return True
         except Exception as ex:
             logger.error(f"Error get user_id from response {ex} XML content is {resp_xml_content}")
             return False
+
+    def update_user_info(self):
+        url = f"{self.base_url}/user/{self.new_user.user_id}"
+        self.headers["X-Fields-Xml"] = f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>"
+        resp = requests.post(url=url, headers=self.headers)
+
+        if resp.status_code != 200:  # other bad response
+            logger.error("Failed to update user")
+            raise Exception(f"Request add_user failed {resp.status_code}")
+        else:
+            logger.info("User info updated correctly")
 
     def check_exist_course_user(self, course_id: str) -> bool:
         """
         Checks if the user has a course by course_id.
         raise CheckExistCourseException if check failed.
 
-        :param course_id: string, id of a course in Isping
+        :param course_id: string, id of a course in Ispring
         :return: bool success
         """
         logger.debug(f"Check user {self.new_user.user_id} for the purpose of the course {course_id}")
         url = f"{self.base_url}/enrollment"
         resp = requests.get(url, headers=self.headers)
 
-        logger.debug(f"Isping check_exist_course_user response: status code={resp.status_code}, content={resp.content}")
+        logger.debug(f"Ispring check_exist_course_user response: status code={resp.status_code}, content={resp.content}")
         if resp.status_code != 200:  # other bad response
             logger.error(f"Failed to check enrollment for user: {self.new_user.user_id} for course_id: {course_id}")
             raise Exception(f"Request check_exist_enrollment_user failed {resp.status_code}")
@@ -148,7 +148,7 @@ class ApiRequest:
         Enroll the user to a courses.
         raise AddUserCourseException on failure.
 
-        :param courses: list of courses id of a courses in Isping
+        :param courses: list of courses id of a courses in Ispring
         :return: bool success
         """
         if not courses:
@@ -167,7 +167,7 @@ class ApiRequest:
 
         resp = requests.post(url=url, headers=self.headers, files=files)
 
-        logger.debug(f"Isping add user to courses response: status code={resp.status_code}, content={resp.content}")
+        logger.debug(f"Ispring add user to courses response: status code={resp.status_code}, content={resp.content}")
         if resp.status_code != 201:
             logger.debug(f"Error add user {self.new_user.user_id} for courses {courses}")
             raise Exception(f"Request add_user_to_enrollment failed {resp.status_code}")
