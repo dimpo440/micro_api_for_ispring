@@ -80,7 +80,7 @@ def ispring_registration():
     """
 
     try:
-        new_user = User.parse_raw(request.data)
+        new_user = User.parse_raw(request.data.decode('utf-8'))
         processing_requests = ApiRequest(new_user)
         processing_requests.api_requests()
         logger.debug(f'User created. User data:{new_user}')
@@ -89,7 +89,7 @@ def ispring_registration():
         return jsonify(response), response_code
     except ValidationError as e:
         logger.debug(f'Validation errors: {e.json()}')
-        logger.debug(f'Request data: {request.data}')
+#        logger.debug(f'Request data: {request.data}')
         response_code = 422  # ошибки валидации, либо существование пользователя по email или phone
         response = {"errors": [str(e.json())]}
         return jsonify(response), response_code
