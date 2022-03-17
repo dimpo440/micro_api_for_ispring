@@ -29,46 +29,6 @@ class ApiRequest:
 
         self.add_user()
 
-        courses_to_add = Config.default_course_ids
-        self.add_user_to_courses(courses_to_add)
-
-    def check_exist_user(self) -> None:
-        """
-        Method for checking the existence of a user, checks by login = self.new_user.email or phone=self.new_user.phone
-
-        :raise UserAlreadyExistsException if exists user with the same login
-        :raise PhoneAlreadyExistsException if exists user with the same phone
-
-        :return: bool check result
-
-        """
-        logger.debug(f"Checking user exists, user_data = {self.new_user}")
-
-        url = f"{self.base_url}/user"
-        email = self.new_user.email
-        resp = requests.get(url, headers=self.headers)
-        logger.debug(f"Ispring Checking user exists response: status code={resp.status_code}, content={resp.content[0:150]}")
-
-        if resp.status_code != 200:  # other bad response
-            raise Exception(f"Request check_exist_user failed {resp.status_code}")
-
-        resp_xml_content = resp.content
-        tree = etree.XML(resp_xml_content)
-        user_by_email = tree.xpath(
-            f'/response/userProfile/fields/field[name = "EMAIL" and value = "{email}"]')
-        if user_by_email:
-            self.new_user.user_id = (tree.xpath(
-                f".//userProfile[./fields/field/name[contains(text(), 'LOGIN')] and ./fields/field/value[contains(text(), '{email}')]]/userId"))[
-                0].text
-            logger.warning(f"User with login {email} already exists, user_id: {self.new_user.user_id}")
-            raise Exception(f"User with email '{self.new_user.email}' already exists")
-        logger.info(f"User with login '{email}' doesn't exist yet")
-
-        is_phone_already_exists = tree.xpath(
-            f'/response/userProfile/fields/field[name = "PHONE" and value = "{self.new_user.phone}"]')
-        if is_phone_already_exists:
-            raise Exception(f"User with phone '{self.new_user.phone}' already exists")
-
     def add_user(self) -> bool:
         """
         Method for adding a new user to Ispring.
@@ -107,6 +67,7 @@ class ApiRequest:
 
     def update_user_info(self):
         url = f"{self.base_url}/user/{self.new_user.user_id}"
+        self.headers.popitem()
         self.headers["X-Fields-Xml"] = f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>"
         resp = requests.post(url=url, headers=self.headers)
 
@@ -114,7 +75,8 @@ class ApiRequest:
             logger.error("Failed to update user")
             raise Exception(f"Request add_user failed {resp.status_code}")
         else:
-            logger.info("User info updated correctly")
+            logger.info("User info updated correctly, trying to make enroll to course")
+            self.add_user_to_courses(Config.default_course_ids)
 
     def check_exist_course_user(self, course_id: str) -> bool:
         """
@@ -143,7 +105,7 @@ class ApiRequest:
         logger.debug(f"User {self.new_user.user_id} has not yet been assigned a course {course_id}")
         return False
 
-    def add_user_to_courses(self, courses: List[str]) -> bool:
+    def add_user_to_courses(self, courses:List[int]) -> bool:
         """
         Enroll the user to a courses.
         raise AddUserCourseException on failure.
@@ -156,21 +118,20 @@ class ApiRequest:
             return False
 
         logger.debug(f"Trying to add user {self.new_user.user_id} on courses {courses}")
-        url = f"{self.base_url}/enrollment"
 
-        files = {
-            'learnerIds[id]': (None, f'{self.new_user.user_id}')
-        }
-        for index, course_id in enumerate(courses):
-            files[f'courseIds[id][{index}]'] = (None, course_id)
+        self.headers.popitem()
+        self.headers["X-Users"] = self.new_user.user_id
 
-        resp = requests.post(url=url, headers=self.headers, files=files)
+        for course in courses:
+            url = f"{self.base_url}/content/{course}/invitation"
 
-        logger.debug(f"Ispring add user to courses response: status code={resp.status_code}, content={resp.content}")
-        if resp.status_code != 201:
-            logger.debug(f"Error add user {self.new_user.user_id} for courses {courses}")
-            raise Exception(f"Request add_user_to_enrollment failed {resp.status_code}")
+            resp = requests.post(url=url, headers=self.headers)
 
-        logger.info(f"Add user {self.new_user.user_id} on courses {courses} successful. resp.content:{resp.content},"
-                    f" resp.text={resp.text}")
+            logger.debug(f"Ispring add user to courses response: status code={resp.status_code}, content={resp.content}")
+            if resp.status_code != 201:
+                logger.debug(f"Error add user {self.new_user.user_id} for courses {courses}")
+                raise Exception(f"Request add_user_to_enrollment failed {resp.status_code}")
+
+            logger.info(f"Add user {self.new_user.user_id} on courses {courses} successful. resp.content:{resp.content},"
+                        f" resp.text={resp.text}")
         return True
