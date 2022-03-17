@@ -4,6 +4,7 @@ from requests.structures import CaseInsensitiveDict
 from config import Config
 from lxml import etree
 from loguru import logger
+import re
 
 
 class ApiRequest:
@@ -62,7 +63,7 @@ class ApiRequest:
         resp_xml_content = resp.content
         try:
             # the last or the only one data in response content is user_id
-            self.new_user.user_id = resp_xml_content.split("'")[-1]
+            self.new_user.user_id = re.search("\d+", resp_xml_content.split()[-1])
             logger.info(f"Add new user successful. User_id: {self.new_user.user_id}, user data: {self.new_user}")
             return True
         except Exception as ex:
