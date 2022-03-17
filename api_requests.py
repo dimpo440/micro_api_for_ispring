@@ -159,8 +159,7 @@ class ApiRequest:
         url = f"{self.base_url}/enrollment"
 
         files = {
-            'learnerIds[id]': (None, f'{self.new_user.user_id}'),
-            'dueDateType': (None, f'{self.dueDate}'),
+            'learnerIds[id]': (None, f'{self.new_user.user_id}')
         }
         for index, course_id in enumerate(courses):
             files[f'courseIds[id][{index}]'] = (None, course_id)
