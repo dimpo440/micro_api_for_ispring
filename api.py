@@ -26,8 +26,8 @@ class User(BaseModel):
     surname: str
     email: str
     phone: str
-    user_id = ''
-    course_id: str
+#    user_id = ''
+#    course_id: str
 
     @validator("name")
     def validate_name(cls, name: str) -> str:
