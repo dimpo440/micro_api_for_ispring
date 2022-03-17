@@ -27,7 +27,12 @@ class ApiRequest:
         :return: None
         """
 
-        self.add_user()
+        if self.add_user():
+            try:
+                self.update_user_info()
+            except Exception as ex:
+                logger.error(f"Error update_user_id: {ex}")
+                return False
 
     def add_user(self) -> bool:
         """
@@ -59,7 +64,6 @@ class ApiRequest:
             # the last or the only one data in response content is user_id
             self.new_user.user_id = resp_xml_content.split()[-1]
             logger.info(f"Add new user successful. User_id: {self.new_user.user_id}, user data: {self.new_user}")
-            self.update_user_info()
             return True
         except Exception as ex:
             logger.error(f"Error get user_id from response {ex} XML content is {resp_xml_content}")
@@ -68,7 +72,7 @@ class ApiRequest:
     def update_user_info(self):
         url = f"{self.base_url}/user/{self.new_user.user_id}"
         self.headers.popitem()
-        self.headers["X-Fields-Xml"] = f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>"
+        self.headers["X-Fields-Xml"] = etree.XML(f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>")
         resp = requests.post(url=url, headers=self.headers)
 
         if resp.status_code != 200:  # other bad response
@@ -77,33 +81,6 @@ class ApiRequest:
         else:
             logger.info("User info updated correctly, trying to make enroll to course")
             self.add_user_to_courses(Config.default_course_ids)
-
-    def check_exist_course_user(self, course_id: str) -> bool:
-        """
-        Checks if the user has a course by course_id.
-        raise CheckExistCourseException if check failed.
-
-        :param course_id: string, id of a course in Ispring
-        :return: bool success
-        """
-        logger.debug(f"Check user {self.new_user.user_id} for the purpose of the course {course_id}")
-        url = f"{self.base_url}/enrollment"
-        resp = requests.get(url, headers=self.headers)
-
-        logger.debug(f"Ispring check_exist_course_user response: status code={resp.status_code}, content={resp.content}")
-        if resp.status_code != 200:  # other bad response
-            logger.error(f"Failed to check enrollment for user: {self.new_user.user_id} for course_id: {course_id}")
-            raise Exception(f"Request check_exist_enrollment_user failed {resp.status_code}")
-
-        resp_xml_content = resp.content
-        tree = etree.XML(resp_xml_content)
-        user_course_found = tree.xpath(
-            f'/response/enrollment[./courseId="{course_id}" and ./learnerId="{self.new_user.user_id}"]')
-        if user_course_found:
-            logger.warning(f"User {self.new_user.user_id} already in list of learners on course {course_id}")
-            return True
-        logger.debug(f"User {self.new_user.user_id} has not yet been assigned a course {course_id}")
-        return False
 
     def add_user_to_courses(self, courses:List[int]) -> bool:
         """
