@@ -27,7 +27,6 @@ class ApiRequest:
         :return: None
         """
 
-        self.check_exist_user()
         self.add_user()
 
         courses_to_add = Config.default_course_ids
@@ -86,13 +85,14 @@ class ApiRequest:
 
         logger.debug(f"Ispring create user response: status code={resp.status_code}, content={resp.content}")
 
+        if resp.status_code == 409:  # other bad response
+            logger.error(f"Failed to create user")
+            self.new_user.user_id = resp_xml_content.split()[-1]
+            raise Exception(f"User with login {self.new_user.email} already exists, user ID is {self.new_user.user_id}")
+
         if resp.status_code != 201:  # other bad response
             logger.error(f"Failed to create user")
             raise Exception(f"Request add_user failed {resp.status_code}")
-
-        if resp.status_code == 409:  # other bad response
-            logger.error(f"Failed to create user")
-            raise Exception(f"User with login {self.new_user.email} already exists")
 
         resp_xml_content = resp.content
         try:
