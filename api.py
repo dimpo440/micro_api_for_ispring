@@ -89,6 +89,7 @@ def ispring_registration():
         return jsonify(response), response_code
     except ValidationError as e:
         logger.debug(f'Validation errors: {e.json()}')
+        logger.debug(f'Request data: {request.data}')
         response_code = 422  # ошибки валидации, либо существование пользователя по email или phone
         response = {"errors": [str(e.json())]}
         return jsonify(response), response_code
