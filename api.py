@@ -26,7 +26,7 @@ class User(BaseModel):
     surname: str
     email: str
     phone: str
-#    user_id = ''
+    user_id = ''
 #    course_id: str
 
     @validator("name")
