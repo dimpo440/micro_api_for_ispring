@@ -111,7 +111,7 @@ class ApiRequest:
             logger.debug(f"Ispring add user to courses response: status code={resp.status_code}, content={resp.content}")
             if resp.status_code != 201:
                 logger.debug(f"Error add user {self.new_user.user_id} for courses {courses}")
-                raise Exception(f"Request add_user_to_enrollment failed {resp.status_code}")
+                raise Exception(f"Request add_user_to_enrollment failed. Code: {resp.status_code}. Content: {resp.content}")
 
             logger.info(f"Add user {self.new_user.user_id} on courses {courses} successful. resp.content:{resp.content},"
                         f" resp.text={resp.text}")
