@@ -52,7 +52,7 @@ class ApiRequest:
 
         if resp.status_code == 409:  # other bad response
             logger.error(f"Failed to create user")
-            self.new_user.user_id = resp_xml_content.split()[-1]
+            self.new_user.user_id = resp_xml_content.split("'")[-1]
             raise Exception(f"User with login {self.new_user.email} already exists, user ID is {self.new_user.user_id}")
 
         if resp.status_code != 201:  # other bad response
@@ -62,7 +62,7 @@ class ApiRequest:
         resp_xml_content = resp.content
         try:
             # the last or the only one data in response content is user_id
-            self.new_user.user_id = resp_xml_content.split()[-1]
+            self.new_user.user_id = resp_xml_content.split("'")[-1]
             logger.info(f"Add new user successful. User_id: {self.new_user.user_id}, user data: {self.new_user}")
             return True
         except Exception as ex:
@@ -72,7 +72,8 @@ class ApiRequest:
     def update_user_info(self):
         url = f"{self.base_url}/user/{self.new_user.user_id}"
         self.headers.popitem()
-        self.headers["X-Fields-Xml"] = etree.XML(f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>")
+        xml_field = etree.XML(f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>")
+        self.headers["X-Fields-Xml"] = etree.tostring(xml_field, encoding="utf-8")
         resp = requests.post(url=url, headers=self.headers)
 
         if resp.status_code != 200:  # other bad response
