@@ -52,7 +52,7 @@ class ApiRequest:
         logger.debug(f"Ispring create user response: status code={resp.status_code}, content={resp.content}")
 
         if resp.status_code == 409:  # other bad response
-            logger.error(f"Failed to create user")
+            logger.error(f"Failed to create user, user with such email exist")
             user_id = re.search("\d+", str(resp.content.split()[-1]))
             self.new_user.user_id = int(user_id.group(0))
             raise Exception(f"User with login {self.new_user.email} already exists, user ID is {self.new_user.user_id}")
