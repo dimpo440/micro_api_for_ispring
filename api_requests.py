@@ -101,7 +101,7 @@ class ApiRequest:
         logger.debug(f"Trying to add user {self.new_user.user_id} on courses {courses}")
 
         self.headers.popitem()
-        self.headers["X-Users"] = self.new_user.user_id
+        self.headers["X-Users"] = str(self.new_user.user_id)
 
         for course in courses:
             url = f"{self.base_url}/content/{course}/invitation"
