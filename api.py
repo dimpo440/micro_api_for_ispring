@@ -28,8 +28,8 @@ class User(BaseModel):
     phone: str
     user_id = ''
 #    course_id: str
-
-    @validator("name")
+# if you use flask form, you may need validation
+'''    @validator("name")
     def validate_name(cls, name: str) -> str:
         name = name.strip()
         if not re.search('^(?P<name>[а-яА-Я]{2,})$', name):
@@ -56,7 +56,7 @@ class User(BaseModel):
         if not re.search('^(?P<email>(?P<mnaim>\S+)\@(?P<host>\S+)\.(?P<domain>\w+))$', email):
             raise ValueError("Incorrect email")
         return email.lower()
-
+'''
 
 class RegistrationForm(FlaskForm):  #TODO добавить нужную валидацию
     """
@@ -100,7 +100,7 @@ def ispring_registration():
         return jsonify(response), response_code
 
 
-@app.route("/api/register_form", methods=['POST', "GET"])
+# @app.route("/api/register_form", methods=['POST', "GET"])
 def ispring_registration_from_form():
     """
     Endpoint to registration a new user in iSpring by web_form
