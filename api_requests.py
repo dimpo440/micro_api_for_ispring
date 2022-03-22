@@ -33,7 +33,6 @@ class ApiRequest:
                 self.update_user_info()
             except Exception as ex:
                 logger.error(f"Error update_user_id: {ex}")
-                return False
 
     def add_user(self) -> bool:
         """
@@ -48,6 +47,7 @@ class ApiRequest:
 
         self.headers["X-email"] = self.new_user.email
         resp = requests.post(url=url, headers=self.headers)
+        self.headers.popitem()
 
         logger.debug(f"Ispring create user response: status code={resp.status_code}, content={resp.content}")
 
@@ -74,7 +74,6 @@ class ApiRequest:
 
     def update_user_info(self):
         url = f"{self.base_url}/user/{str(self.new_user.user_id)}"
-        self.headers.popitem()
         xml_field = etree.XML(f"<fields><first_name>{self.new_user.name}</first_name><last_name>{self.new_user.surname}</last_name><USER_FIELD_xPH1D>{self.new_user.phone}</USER_FIELD_xPH1D></fields>")
         self.headers["X-Fields-Xml"] = etree.tostring(xml_field, encoding="utf-8")
         resp = requests.post(url=url, headers=self.headers)

@@ -7,6 +7,7 @@ from typing import Union, Dict, List, Type, Any
 from loguru import logger
 from api_requests import ApiRequest
 from config import Config
+import password
 
 
 app = Flask(__name__)
@@ -27,6 +28,7 @@ class User(BaseModel):
     email: str
     phone: str
     user_id = ''
+    user_password = ''
 #    course_id: str
 # if you use flask form, you may need validation
 '''    @validator("name")
@@ -81,10 +83,11 @@ def ispring_registration():
 
     try:
         new_user = User.parse_raw(request.data.decode('utf-8'))
+        new_user.user_password = password.generator(8)
         processing_requests = ApiRequest(new_user)
         processing_requests.api_requests()
         logger.debug(f'User created. User data:{new_user}')
-        response = {}
+        response = {"password": f"{new_user.user_password}"}
         response_code = 201  # для успешной регистрации нового пользователя
         return jsonify(response), response_code
     except ValidationError as e:
