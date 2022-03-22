@@ -83,7 +83,7 @@ def ispring_registration():
 
     try:
         new_user = User.parse_raw(request.data.decode('utf-8'))
-        new_user.user_password = password.generator(8)
+        new_user.user_password = password.generator(length=8)
         processing_requests = ApiRequest(new_user)
         processing_requests.api_requests()
         logger.debug(f'User created. User data:{new_user}')
