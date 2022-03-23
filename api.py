@@ -87,7 +87,7 @@ def ispring_registration():
         processing_requests = ApiRequest(new_user)
         processing_requests.api_requests()
         logger.debug(f'User created. User data:{new_user}')
-        response = {"password": f"{new_user.user_password}"}
+        response = {"password": str(new_user.user_password)}
         response_code = 201  # для успешной регистрации нового пользователя
         return jsonify(response), response_code
     except ValidationError as e:
@@ -101,6 +101,12 @@ def ispring_registration():
         response = {"message": "У нас технические сложности, но скоро все заработает! Попробуйте повторить операцию немного позже"}
         response_code = 500  # разные ошибки выполнения запросов к ISPING, ошибки в работе API
         return jsonify(response), response_code
+
+@app.route("/api/post", methods=["POST"])
+def password_request():
+    response = {"password": str(password.generator(length=8))}
+    response_code = 201  # для успешной регистрации нового пользователя
+    return jsonify(response), response_code
 
 
 # @app.route("/api/register_form", methods=['POST', "GET"])
