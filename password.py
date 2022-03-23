@@ -38,6 +38,6 @@ def get_characters(**kwargs):
         characters += SYMBOLS
 
     if len(characters) == 0:
-        return UPPERCASE + LOWERCASE + DIGITS + SYMBOLS
+        return UPPERCASE + LOWERCASE + DIGITS
 
     return characters
