@@ -49,7 +49,6 @@ class ApiRequest:
         self.headers["X-Password"] = self.new_user.user_password
         resp = requests.post(url=url, headers=self.headers)
         self.headers.popitem()
-        self.headers.popitem()
 
         logger.debug(f"Ispring create user response: status code={resp.status_code}, content={resp.content}")
 
