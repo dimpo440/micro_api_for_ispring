@@ -82,7 +82,7 @@ class ApiRequest:
 
         if resp.status_code != 200:  # other bad response
             logger.error("Failed to update user")
-            raise Exception(f"Request add_user failed {resp.status_code}")
+            raise Exception(f"Request user_update failed {resp.status_code} {resp.content}")
         else:
             logger.info("User info updated correctly, trying to make enroll to course")
             self.add_user_to_courses(Config.default_course_ids)
