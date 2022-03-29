@@ -46,7 +46,7 @@ class ApiRequest:
         url = f"{self.base_url}/user"
 
         self.headers["X-email"] = self.new_user.email
-        self.headers["X-Password"] = self.new_user.password
+        self.headers["X-Password"] = self.new_user.user_password
         resp = requests.post(url=url, headers=self.headers)
         self.headers.popitem()
         self.headers.popitem()
