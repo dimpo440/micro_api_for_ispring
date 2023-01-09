@@ -1,41 +1,27 @@
-Прототип микросервиса для регистрации в СДО isping.
-Используется версия API окументированная тут https://www.ispringsolutions.com/docs/display/learn/REST+API
+Micro service for registration on online education platform Ispring.
 
-Адрес endpoint /api/register  
-Обрабатывает POST запрос  
-Принимает на вход JSON вида  
+
+What was changed in fork:
+Originally nothing worked from the box, that was only prototype, so:
+- Simplified validation
+- Setup nessesary fields
+- Adapted for Ispring API documentation from https://www.ispringsolutions.com/docs/display/learn/REST+API
+- Added password generation
+
+Endpoint /api/register  
+require POST request JSON  
 {  
 "name": "Иван",  
 "surname": "Петров",  
 "email": "email@email.com",  
 "phone": "+78975678920"  
 }
-
-или данные html формы с полями: name, surname, email, phone
-
-Формат ответов микросервиса:
-
-- при создании пользователя возвращается 201 код ответа с телом содержащим сгенерированный для пользователя пароль.
-
-- при ошибках валидации/существовании пользователя возвращается 422 код ответа и JSON, ключ "errors" 
-
-- при разных ошибках возвращается 500 код ответа и JSON, ключ "message" с ошибкой:
+Outputs for request:
+- 201 successfull creation of user, initial password included
+- 422 validation/user exist error, with error text
+- 500 other errors, with error message text
 
 {
 "message": "Internal Server Error"
 }
 
-
-Инструкция по сборке и запуску docker контейнера
-
-* Перейти в папку register_api
-* Собрать docker образ командой:  
-  docker build -t <имя образа> .
-* Запустить docker контейнер командой:  
-  docker run -e X_AUTH_EMAIL=<email для авторизации в ispring> -e X_AUTH_PASSWORD=<пароль для авторизации в ispring> -d -p 80:5000 <название образа>
-
-
-Для тестирования присутствует html форма.  
-Для запуска:
-* перейти в папку register_test_form
-* открыть в браузере http://127.0.0.1:5000/api/register_form?course_id=подставить_id_курса_на_который_будем_регистрировать_пользователя
